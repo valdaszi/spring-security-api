@@ -27,10 +27,24 @@ public class ApiIntegrationTest {
 
 
     @Test
-    public void testUser401() throws Exception {
+    public void testUserNoUser() throws Exception {
         mockMvc.perform(get("/user"))
                 .andDo(print())
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void testAdminNoUser() throws Exception {
+        mockMvc.perform(get("/admin"))
+                .andDo(print())
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void testAnyNoUser() throws Exception {
+        mockMvc.perform(get("/any"))
+                .andDo(print())
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -51,6 +65,16 @@ public class ApiIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "USER")
+    public void testAnyWithUser() throws Exception {
+        mockMvc.perform(get("/any"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.any", is(true)));
+
+    }
+
+    @Test
     @WithMockUser(roles = "ADMIN")
     public void testUserWithAdmin() throws Exception {
         mockMvc.perform(get("/user"))
@@ -66,6 +90,16 @@ public class ApiIntegrationTest {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.admin", is(true)));
+
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    public void testAnyWithAdmin() throws Exception {
+        mockMvc.perform(get("/any"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.any", is(true)));
 
     }
 

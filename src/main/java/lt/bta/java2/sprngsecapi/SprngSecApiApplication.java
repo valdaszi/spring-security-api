@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -26,6 +27,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.filter.GenericFilterBean;
 
 import javax.annotation.Resource;
+import javax.annotation.security.PermitAll;
+import javax.annotation.security.RolesAllowed;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
@@ -49,11 +52,13 @@ public class SprngSecApiApplication {
 @RestController
 class Api {
 
+    @RolesAllowed({"USER","ADMIN"})
     @GetMapping("/user")
     public Map method1() {
         return Collections.singletonMap("user", true);
     }
 
+    @RolesAllowed("ADMIN")
     @GetMapping("/admin")
     public Map method2() {
         return Collections.singletonMap("admin", true);
@@ -65,14 +70,13 @@ class Api {
     }
 
 
-
     @Resource
     AuthenticationManager authenticationManager;
 
     @Resource
     JwtTokenProvider jwtTokenProvider;
 
-
+    @PermitAll
     @PostMapping("/login")
     public ResponseEntity login(@RequestBody LoginRequest data) {
         // jei userio login duomenys neteisingi, tai bus ismetamas AuthenticationException
@@ -98,6 +102,7 @@ class LoginRequest {
 // Spring Security pagrindinis konfiguravimo komponentas:
 // Reikia aprasyti 2 bean'us: UserDetailsService ir AuthenticationManager
 // o taip pat configure metode nurodyti saugumo parametrus bei papildoma musu filtra JwtTokenFilter
+@EnableGlobalMethodSecurity(jsr250Enabled = true)
 @Configuration
 class SecurityConfig extends WebSecurityConfigurerAdapter {
 
@@ -129,9 +134,6 @@ class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
 
                 .authorizeRequests()
-                .antMatchers("/login").permitAll()
-                .antMatchers("/user").hasAnyRole("USER", "ADMIN")
-                .antMatchers("/admin").hasRole("ADMIN")
                 .anyRequest().authenticated()
 
                 .and()

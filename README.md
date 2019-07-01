@@ -21,6 +21,30 @@ These additional references should also help you:
 * [Gradle Build Scans – insights for your project's build](https://scans.gradle.com#gradle)
 
 
+### Kas gali būti svarbu
+
+- __Klasėje _SecurityConfig_ aprašyti _AuthenticationManager_ tipo _@Bean_.__ 
+
+    Jis bus naudojamas realizuojant __Api__ klasėje metodą __login__. 
+    
+- __Klasėje _SecurityConfig_ aprašyti _UserDetailsService_ tipo _@Bean_.__ 
+  
+    Jis bus naudojamas kaip "netikrų" sistemos userių šaltinis. 
+          
+- __Sukurti komponentą _JwtTokenProvider_.__
+
+    Jis bus naudojamas security filtre __JwtTokenFilter__ ir taip pat __Api__ klasės __login__ metode.
+
+- __Klasės _SecurityConfig_ metode _configure_ uždraudžiame naudoti http sesijas.__
+    ```
+    .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+    ```
+
+- __Klasės _SecurityConfig_ metode _configure_ užregistruoti filtrą _JwtTokenProvider_.__
+    ```
+    .addFilterBefore(new JwtTokenFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
+    ```
+
 ### Naudingi linkai 
 
 * [Protect REST APIs with Spring Security and JWT](https://medium.com/@hantsy/protect-rest-apis-with-spring-security-and-jwt-5fbc90305cc5)
